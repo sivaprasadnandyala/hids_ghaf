@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: hids
+Version: 0.0.1
+Summary: A Python package to generate secure configuration for systemd service.
+Home-page: https://github.com/xx/yyy
+Author: XXX
+Author-email: xxx.yy@tii.ae
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: scikit-learn
+Requires-Dist: seaborn
+
+# secure-systemd
+Tool to generate secure configuration for systemd services.

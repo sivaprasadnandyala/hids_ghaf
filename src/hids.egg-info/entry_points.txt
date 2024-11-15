@@ -1,0 +1,2 @@
+[console_scripts]
+rtinference = src.realtime_inference:main

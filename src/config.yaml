@@ -1,0 +1,198 @@
+# config.yaml
+paths:
+  base_dir: ${PROJECT_BASE_DIR:-/var/lib/hids}
+  log_dir: ${LOG_DIR:-${PROJECT_BASE_DIR}/logs}
+  temp_dir: ${TEMP_DIR:-${PROJECT_BASE_DIR}/temp}
+  archive_dir: ${ARCHIVE_DIR:-${PROJECT_BASE_DIR}/archive}
+  graphs_dir: ${GRAPHS_DIR:-${PROJECT_BASE_DIR}/graphs}
+  tetragon:
+    bpf_lib: ${TETRAGON_BPF_PATH:-/usr/local/lib/tetragon/bpf}
+    policy_file: ${POLICY_FILE:-${PROJECT_BASE_DIR}/syscallpolicy.yaml}
+    log_level: info
+    check_interval: 20
+    restart_delay: 5
+    max_retries: 3
+    init_wait: 3
+
+data_storage:
+  raw_logs: ${PROJECT_BASE_DIR}/data/raw_logs
+  processed_logs: ${PROJECT_BASE_DIR}/data/processed_logs
+  training_data: ${PROJECT_BASE_DIR}/data/training
+  testing_data: ${PROJECT_BASE_DIR}/data/testing
+  archive: ${PROJECT_BASE_DIR}/data/archive
+  models: ${PROJECT_BASE_DIR}/models
+  results: ${PROJECT_BASE_DIR}/results
+  realtime:
+    base: ${PROJECT_BASE_DIR}/data/realtime
+    results: ${PROJECT_BASE_DIR}/results/realtime
+    alerts: ${PROJECT_BASE_DIR}/results/realtime/alerts
+    plots: ${PROJECT_BASE_DIR}/results/realtime/plots
+    metrics: ${PROJECT_BASE_DIR}/results/realtime/metrics
+    temp: ${PROJECT_BASE_DIR}/temp/realtime
+
+directories:
+  required:
+    - ${LOG_DIR}
+    - ${TEMP_DIR}
+    - ${ARCHIVE_DIR}
+    - ${GRAPHS_DIR}
+
+model:
+  file: ${PROJECT_BASE_DIR}/models/final/best_autoencoder_model.pth
+  scaler: ${PROJECT_BASE_DIR}/models/final/scaler.pkl
+  thresholds: ${PROJECT_BASE_DIR}/models/final/thresholds.npy
+  processed_log_template: syscalls_processed_{}.log
+
+processes:
+  training:
+    - "/opt/google/chrome/chrome"
+  testing:
+    - "/usr/share/teams/teams"
+
+model_config:
+  training:
+    batch_size: 64
+    learning_rate: 1e-5
+    weight_decay: 1e-6
+    num_epochs: 400
+    early_stopping_patience: 30
+    validation_split: 0.2
+    min_epochs: 100
+    warmup_epochs: 5
+    validation_frequency: 1
+    min_batch_size: 32
+    max_batch_size: 128
+    min_samples_required: 256  # batch_size * 4
+
+  scheduler:
+    T_0: 50
+    T_mult: 1
+    eta_min: 1e-6
+    warmup_factor: 0.1
+
+  architecture:
+    encoder_dims: [128, 64, 32]
+    dropout_rate: 0.3
+    batch_norm: true
+    leaky_relu_slope: 0.2
+
+  thresholds:
+    trained_percentile: 95
+    unseen_multiplier: 1.2
+    min_samples: 1000
+    threshold_multiplier: 1.5
+
+ssg_config:
+  plot_interval: 10000
+  plot_size: [20, 12]
+  node_sizes:
+    normal: 1000
+    special: 2000
+  node_colors:
+    seen: "lightblue"
+    unseen_syscall: "orange"
+    unseen_arg: "red"
+  edge_alpha: 0.4
+  node_alpha: 0.7
+  font_sizes:
+    node_labels: 10
+    edge_labels: 8
+    title: 14
+    legend: 10
+  special_nodes: ["USN", "UAN"]
+  special_syscalls: ["open", "stat", "execve", "clone"]
+  layout: "spring"
+  dpi: 300
+  save_format: "png"
+
+resource_limits:
+  max_processes: 1000
+  max_memory_percent: 90
+  max_cpu_percent: 80
+  max_disk_percent: 95
+  process_timeout: 5
+  max_log_size: 1073741824  # 1GB
+  warning_threshold: 0.8
+  memory_check_interval: 300
+  log_rotation_count: 5
+
+collection_config:
+  batch_size: 1000
+  json_buffer_size: 104857600  # 100MB
+  max_batch_time: 60
+  min_syscalls_per_batch: 100
+  retry_delay: 2
+  max_retries: 5
+  file_patterns:
+    json: "syscalls_raw_{process}_{timestamp}.json"
+    text: "syscalls_processed_{process}_{timestamp}.log"
+    features: "features_{process}_{timestamp}.npy"
+
+tetragon_json:
+  format_version: "1.0"
+  required_fields: ["process_tracepoint", "process", "binary"]
+  max_line_size: 1048576  # 1MB
+  encoding: "utf-8"
+
+realtime_config:
+  dynamic_window_size: 50
+  plot_interval: 60
+  metrics_save_interval: 300
+  alert_thresholds:
+    anomaly_rate: 0.3
+    consecutive_anomalies: 5
+    mse_multiplier: 2.0
+  process_timeout: 5
+  process_check_interval: 60
+
+feature_extraction:
+  max_args: 5
+  feature_dimension: 11
+  hash_mod: 100
+  window_size: 64
+  min_samples: 256
+  stride_ratio: 0.25
+  min_window_ratio: 0.5
+  max_windows_per_batch: 1000
+
+ssg_features:
+  min_syscalls_per_window: 50000
+  expected_feature_dim: 11
+  batch_size: 64
+  feature_types:
+    - usi
+    - uai
+    - graph_size
+    - node_count
+    - edge_count
+    - avg_degree
+    - context_influence
+    - frequency_increase
+    - unique_syscalls
+    - unique_args
+    - syscall_entropy
+  edge_weight_threshold: 0.1
+  max_edges_per_node: 500
+  clustering_threshold: 0.3
+
+logging:
+  level: DEBUG
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+  files:
+    main: hids.log
+    syscalls: syscalls.log
+    temp: temp.log
+
+performance_monitoring:
+  log_interval: 60
+  plot_interval: 300
+  max_history_size: 1000
+  critical_thresholds:
+    cpu: 80
+    memory: 85
+    detection_time: 1.0
+
+debug:
+  enabled: false
+  verbose_logging: true
+  profiling_enabled: false

@@ -1,0 +1,9 @@
+README.md
+setup.py
+src/hids.egg-info/PKG-INFO
+src/hids.egg-info/SOURCES.txt
+src/hids.egg-info/dependency_links.txt
+src/hids.egg-info/entry_points.txt
+src/hids.egg-info/requires.txt
+src/hids.egg-info/top_level.txt
+src/models/__init__.py
